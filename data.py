@@ -1,10 +1,3 @@
-"""
-@author : Hansu Kim(@cpm0722)
-@when : 2022-08-21
-@github : https://github.com/cpm0722
-@homepage : https://cpm0722.github.io
-"""
-
 import os
 import torch
 from torch.utils.data import DataLoader
@@ -63,7 +56,7 @@ class Multi30k(pl.LightningDataModule):
         # self.build_transform()
 
         self.raw_dir = "raw"
-        self.cache_dir = "/home/project/Convexplainer_enfr/.data"
+        self.cache_dir = "/home/project/SITH/.data"
         self.batch_size = 1
 
     def prepare_data(self):
@@ -173,14 +166,6 @@ class Multi30k(pl.LightningDataModule):
         batch_tgt = self.transform_tgt(tgt)
         return (batch_src, batch_tgt)
 
-
-    # def get_iter(self, **kwargs):
-    #     if self.transform_src is None:
-    #         self.build_transform()
-    #     train_iter = DataLoader(self.train, collate_fn=self.collate_fn, **kwargs)
-    #     valid_iter = DataLoader(self.valid, collate_fn=self.collate_fn, **kwargs)
-    #     test_iter = DataLoader(self.test, collate_fn=self.collate_fn, **kwargs)
-    #     return train_iter, valid_iter, test_iter
 
     def train_dataloader(self):
         return DataLoader(self.train, self.batch_size, collate_fn=self.collate_fn)

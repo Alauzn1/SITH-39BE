@@ -49,8 +49,6 @@ def cli_main():
                                             gpus=[1],
                                             deterministic=True,
                                             callbacks=[early_stop_callback, checkpoint_callback],
-                                            # precision=16,
-                                            # fast_dev_run=True,
                                             log_every_n_steps=10,
                                             logger=logger,
                                             max_epochs=1000)

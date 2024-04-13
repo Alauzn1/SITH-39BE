@@ -1,7 +1,5 @@
-#from rnns_trainer import LitClassifier
 import torch.nn as nn
 from models.model.transformer import Transformer_Model
-import models.embedding.token_embedding
 from argparse import ArgumentParser
 from datasets import *
 from datasets.data import Multi30k
@@ -12,12 +10,13 @@ from utils_t import greedy_decode, gettgt
 import torch
 import pickle
 from tqdm import tqdm
+from argparse import Namespace
 import yaml
 from collections import OrderedDict
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-def get_reduce_word_vec(wait_reduce, reduce_type, low_dim=2):
+def get_reduce_word_vec(wait_reduce, reduce_type, low_dim=3):
     '''
     数据去重, 降维
     :param wait_reduce 等待降维的
@@ -29,8 +28,6 @@ def get_reduce_word_vec(wait_reduce, reduce_type, low_dim=2):
     all_vec_2_dimension = reduce_dimension.reduce_dimension(all_vec_unique, low_dim, reduce_type)
     print("坐标整合完毕")
     return all_vec_unique, all_vec_2_dimension
-
-
 
 
 def collect_vectors(ckpt_file, hparams_file, vectors_file):
@@ -45,25 +42,32 @@ def collect_vectors(ckpt_file, hparams_file, vectors_file):
     model.eval()
     print('加载模型成功')
 
+    def namespace_constructor(loader, node):
+        return Namespace(**loader.construct_mapping(node))
+
+    yaml.add_constructor("tag:yaml.org,2002:python/object:argparse.Namespace", namespace_constructor)
+
+    with open(hparams_file, 'r') as file:
+        yaml_config = yaml.load(file, Loader=yaml.FullLoader)
+
     print('加载数据集')
     pl.seed_everything(0)
     # 加载数据集
-    yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
+    # yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
     ds = ds_dict[yaml_config['args'].dataset]()
     ds.prepare_data()
     ds.setup()
     print('加载数据集成功')
 
-
-
     # TODO: Embedding Tensor 实际上跟Hidden的维度可能是不同的
     hidden_high = None
 
-    file_path_src = "/home/jinxin/project/LJX_1008_Convexplainer_enfr/data/test_2016_flickr.en"
-    file_path_tgt = "/home/jinxin/project/LJX_1008_Convexplainer_enfr/data/test_2016_flickr.fr"
+    file_path_src = "/home/project/SITH/data/test_2016_flickr.en"
+    file_path_tgt = "/home/project/SITH/data/test_2016_flickr.fr"
 
     with open(file_path_src, "r") as file1, open(file_path_tgt, 'r') as file2:
         for line1, line2 in zip(file1, file2):
+            print(line1)
             src = str(line1.strip())
             tgt = str(line2.strip())
             embedding_pos_tgt = ds.get_tgt_embed(model, tgt, gettgt)
@@ -76,27 +80,14 @@ def collect_vectors(ckpt_file, hparams_file, vectors_file):
             encoder_4 = encoder_sixall[3]
             encoder_5 = encoder_sixall[4]
             encoder_6 = encoder_sixall[5]
-            # print('encoder--------------------')
-            # print(encoder_1.shape)
-            # print(encoder_2.shape)
-            # print(encoder_3.shape)
-            # print(encoder_4.shape)
-            # print(encoder_5.shape)
-            # print(encoder_6.shape)
-            # decoder_sixall = model.get_middle_decoder(src, tgt)
-            # print('decoder--------------------')
+        
             decoder_1 = decoder_sixall[0]
             decoder_2 = decoder_sixall[1]
             decoder_3 = decoder_sixall[2]
             decoder_4 = decoder_sixall[3]
             decoder_5 = decoder_sixall[4]
             decoder_6 = decoder_sixall[5]
-            # print(decoder_1.shape)
-            # print(decoder_2.shape)
-            # print(decoder_3.shape)
-            # print(decoder_4.shape)
-            # print(decoder_5.shape)
-            # print(decoder_6.shape)
+            
             # 去掉第一维的batch
             embedding_pos_seq = embedding_pos.squeeze(0).detach().numpy()
             encoder_1_seq = encoder_1.squeeze(0).detach().numpy()
@@ -139,8 +130,3 @@ def generate_vector_dict(ckpt_file, hparams_file, vectors_file, reduce_file, red
     np.savez_compressed(reduce_file, high=embedding_high_uni, low=embedding_low)
 
 
-# if __name__ == '__main__':
-#     generate_vector_dict(
-#         '/data/jinxin/Transformer_multi30k_enfr_0921/model6_6/version_3/checkpoints/epoch=499-val_loss=1.305.ckpt',
-#         '/data/jinxin/Transformer_multi30k_enfr_0921/model6_6/version_3/hparams.yaml',
-#         f'./save/LJX_Convexplainer_enfr_20230922/vector_111', f'./save/LJX_Convexplainer_enfr_20230922/reduce_111', 'pca')
