@@ -10,8 +10,13 @@ from utils.utils import generate_numpy_key
 from datasets import *
 from datasets.data import Multi30k
 from utils_t import greedy_decode, gettgt
+from scipy.spatial import ConvexHull
 import yaml
+from argparse import Namespace
 from models.model.transformer import Transformer_Model
+
+def centroid_distance(centroid1, centroid2):
+    return np.linalg.norm(centroid1 - centroid2)
 
 def calculate_each(embedding, hidden, prefix):
     # a 为词向量所对应的点集
@@ -19,20 +24,26 @@ def calculate_each(embedding, hidden, prefix):
     # 序列长度
     seq_len = len(embedding)
     # 去除重复行
+
     embedding_np = np.unique(np.array(embedding), axis=0)
     hidden_np = np.unique(np.array(hidden), axis=0)
 
-    embedding_mp = MultiPoint(embedding_np)
-    hidden_mp = MultiPoint(hidden_np)
+    embedding_hull = ConvexHull(embedding_np)
+    hidden_hull = ConvexHull(hidden_np)
 
-    embedding_convex =embedding_mp.convex_hull
-    hidden_convex = hidden_mp.convex_hull
+    # 获取凸包的顶点
+    embedding_vertices = embedding_hull.points[embedding_hull.vertices]
+    hidden_vertices = hidden_hull.points[hidden_hull.vertices]
+
+    # 计算凸包顶点的重心
+    embedding_centroid = np.mean(embedding_vertices, axis=0)
+    hidden_centroid = np.mean(hidden_vertices, axis=0)
 
     # 两个凸包质心的距离CIO
-    centroid_distance = embedding_convex.centroid.distance(hidden_convex.centroid)
+    distance = centroid_distance(embedding_centroid, hidden_centroid)
 
     return {
-        f'{prefix}-CIO': centroid_distance,
+        f'{prefix}-CIO': distance,
     }
 
 
@@ -50,8 +61,17 @@ def calculate(ckpt_file, hparams_file, dict_file, record_file):
     model.eval()
     pl.seed_everything(0)
 
+    def namespace_constructor(loader, node):
+        return Namespace(**loader.construct_mapping(node))
+
+    yaml.add_constructor("tag:yaml.org,2002:python/object:argparse.Namespace", namespace_constructor)
+
+    with open(hparams_file, 'r') as file:
+        yaml_config = yaml.load(file, Loader=yaml.FullLoader)
+
+
     # 加载数据集
-    yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
+    # yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
 
     ds = ds_dict[yaml_config['args'].dataset]()
     ds.prepare_data()
@@ -61,9 +81,8 @@ def calculate(ckpt_file, hparams_file, dict_file, record_file):
     print('开始计算...')
     all_cal = []
 
-    file_path_src = "/home/jinxin/project/Convexplainer_enfr/data/test_2016_flickr.en"
-    file_path_tgt = "/home/jinxin/project/Convexplainer_enfr/data/test_2016_flickr.fr"
-
+    file_path_src = "/home/project/SITH/data/test_2016_flickr.en"
+    file_path_tgt = "/home/project/SITH/data/test_2016_flickr.fr"
 
     with open(file_path_src, "r") as file1, open(file_path_tgt, 'r') as file2:
         for line1, line2 in zip(file1, file2):
