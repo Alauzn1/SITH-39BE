@@ -1,5 +1,3 @@
-
-
 import copy
 import torch.nn as nn
 
@@ -18,10 +16,8 @@ class Decoder(nn.Module):
         for layer in self.layers:
             out = layer(out, encoder_out, tgt_mask, src_tgt_mask)
             de_layer_out.append(out)
-        # leng = len(de_layer_out)
-        # print('decoder输出长度：=============================================================')
-        # print(leng)
+   
         out = self.norm(out)
-        # print(de_layer_out[leng-1].equal(out))
+
 
         return out, de_layer_out

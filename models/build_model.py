@@ -1,8 +1,5 @@
 import torch
 import torch.nn as nn
-
-#
-# from models.model.transformer import Transformer_Model
 from models.model.encoder import Encoder
 from models.model.decoder import Decoder
 from models.block.encoder_block import EncoderBlock
@@ -75,12 +72,4 @@ class build_model(pl.LightningModule):
                           norm = copy(norm))
         self.generator = nn.Linear(args.d_model, tgt_vocab_size)
 
-        # model = Transformer_Model(
-        #                     src_embed = ,
-        #                     tgt_embed = tgt_embed,
-        #                     encoder = encoder,
-        #                     decoder = decoder,
-        #                     generator = generator)
 
-
-        # return src_embed, tgt_embed, encoder, decoder, generator

@@ -1,9 +1,3 @@
-"""
-@author : Hansu Kim(@cpm0722)
-@when : 2022-08-21
-@github : https://github.com/cpm0722
-@homepage : https://cpm0722.github.io
-"""
 
 import os
 import torch
@@ -63,7 +57,7 @@ class Multi30k(pl.LightningDataModule):
         # self.build_transform()
 
         self.raw_dir = "raw"
-        self.cache_dir = "/home/project/Convexplainer_enfr/.data"
+        self.cache_dir = "/home/project/SITH/.data"
         self.batch_size = 1
 
     def prepare_data(self):
