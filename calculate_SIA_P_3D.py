@@ -37,7 +37,6 @@ def calculate_each(embedding, hidden, prefix):
     intersection = convex_hull1.intersection(convex_hull2)
 
     try:
-        # 尝试获取交集的凸包
         convex_hull3 = intersection.convex_hull
 
         S_corss = convex_hull3.area
@@ -47,7 +46,7 @@ def calculate_each(embedding, hidden, prefix):
 
 
     except ValueError:
-        print("不相交")
+        print("Disjoint")
         SIA_P = 0
 
     return {
@@ -56,15 +55,14 @@ def calculate_each(embedding, hidden, prefix):
 
 
 def calculate(ckpt_file, hparams_file, dict_file, record_file):
-    print('开始加载并且构造字典文件, 请等待...')
-    # 加载向量文件
+    print('Starting to load and construct dictionary file, please wait...')
+    # Load vector file
     print('vector_reduce = np.load dict_file', dict_file)
     vector_reduce = np.load('{}.npz'.format(dict_file))
     all_dict = {}
     for i, _ in enumerate(vector_reduce['high']):
         all_dict[generate_numpy_key(_)] = i
-    print('开始加载模型文件, 请等待...')
-    # 加载要使用的模型
+    print('Starting to load model file, please wait...')
     model = Transformer_Model.load_from_checkpoint(ckpt_file, hparams_file=hparams_file)
     model.eval()
     pl.seed_everything(0)
@@ -77,14 +75,13 @@ def calculate(ckpt_file, hparams_file, dict_file, record_file):
     with open(hparams_file, 'r') as file:
         yaml_config = yaml.load(file, Loader=yaml.FullLoader)
 
-    # 加载数据集
     # yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
 
     ds = ds_dict[yaml_config['args'].dataset]()
     ds.prepare_data()
     ds.setup()
 
-    print('开始计算...')
+    print('Start calculation...')
     all_cal = []
 
     file_path_src = "/home/project/SITH/data/test_2016_flickr.en"
