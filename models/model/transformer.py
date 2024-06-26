@@ -149,8 +149,7 @@ class Transformer_Model(pl.LightningModule):
         self.log('bleu_score', bleu_score, prog_bar=True)
 
     def training_epoch_end(self, training_ouputs):
-        # training_ouputs应该是有batch_size行字典，记录着每一个batch的loss和acc，training_ouputs[0]["loss"]就是取出第一个batch的loss
-        avg_loss = torch.tensor([x["loss"] for x in training_ouputs]).mean()  # 一个epoch的平均loss
+        avg_loss = torch.tensor([x["loss"] for x in training_ouputs]).mean() 
         self.log('training_loss_epoch_end', avg_loss, prog_bar=True)
         print(f"training_loss_epoch_end:{avg_loss:.5f}")
 
