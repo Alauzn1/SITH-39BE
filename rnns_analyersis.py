@@ -28,7 +28,7 @@ CSV_FILE_SIA_I = f'/data/save/{BASE_NAME}/cal_SIA_I.csv'
 
 
 if os.path.exists(f'/data/save/{BASE_NAME}'):
-    raise Exception(f'设定的BASE_NAME: {BASE_NAME} 已经存在了')
+    raise Exception(f'BASE_NAME: {BASE_NAME} already exists')
 else:
     os.mkdir(f'/data/save/{BASE_NAME}')
 
