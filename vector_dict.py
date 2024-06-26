@@ -17,30 +17,24 @@ from collections import OrderedDict
 # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def get_reduce_word_vec(wait_reduce, reduce_type, low_dim=3):
-    '''
-    数据去重, 降维
-    :param wait_reduce 等待降维的
-    :param low_dim: 降低到的维数,默认为2
-    :return: all_vec_2_dimension, all_vec_unique
-    '''
-    print("开始整合坐标")
+   
+    print("Start integrating coordinates")
     all_vec_unique = wait_reduce
     all_vec_2_dimension = reduce_dimension.reduce_dimension(all_vec_unique, low_dim, reduce_type)
-    print("坐标整合完毕")
+    print("Coordinate integration completed")
     return all_vec_unique, all_vec_2_dimension
 
 
 def collect_vectors(ckpt_file, hparams_file, vectors_file):
     """
-    获取数据集中高位到低维的字典
+    Obtain dictionaries from high to low dimensions in the dataset
     :return:
     """
-    print('加载模型')
-    # 加载要使用的模型
+    print('Load model')
 
     model = Transformer_Model.load_from_checkpoint(ckpt_file)
     model.eval()
-    print('加载模型成功')
+    print('Successfully loaded model')
 
     def namespace_constructor(loader, node):
         return Namespace(**loader.construct_mapping(node))
@@ -50,16 +44,13 @@ def collect_vectors(ckpt_file, hparams_file, vectors_file):
     with open(hparams_file, 'r') as file:
         yaml_config = yaml.load(file, Loader=yaml.FullLoader)
 
-    print('加载数据集')
+    print('Load Dataset')
     pl.seed_everything(0)
-    # 加载数据集
     # yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
     ds = ds_dict[yaml_config['args'].dataset]()
     ds.prepare_data()
     ds.setup()
-    print('加载数据集成功')
 
-    # TODO: Embedding Tensor 实际上跟Hidden的维度可能是不同的
     hidden_high = None
 
     file_path_src = "/home/project/SITH/data/test_2016_flickr.en"
@@ -88,7 +79,7 @@ def collect_vectors(ckpt_file, hparams_file, vectors_file):
             decoder_5 = decoder_sixall[4]
             decoder_6 = decoder_sixall[5]
             
-            # 去掉第一维的batch
+            # Remove the batch from the first dimension
             embedding_pos_seq = embedding_pos.squeeze(0).detach().numpy()
             encoder_1_seq = encoder_1.squeeze(0).detach().numpy()
             encoder_2_seq = encoder_2.squeeze(0).detach().numpy()
@@ -112,7 +103,7 @@ def collect_vectors(ckpt_file, hparams_file, vectors_file):
                 hidden_high = _
             else:
                 hidden_high = np.vstack((hidden_high, _))
-        print('开始保存-------------------')
+        print('Start saving-------------------')
         np.savez(vectors_file, hidden_high=hidden_high)
 
 
