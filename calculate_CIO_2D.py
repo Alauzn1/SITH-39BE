@@ -24,7 +24,7 @@ def calculate_each(embedding, hidden, prefix):
     embedding_convex =embedding_mp.convex_hull
     hidden_convex = hidden_mp.convex_hull
 
-    # 两个凸包质心的距离CIO
+    # The distance CIO between the centroids of two convex hulls
     centroid_distance = embedding_convex.centroid.distance(hidden_convex.centroid)
 
     return {
@@ -33,28 +33,24 @@ def calculate_each(embedding, hidden, prefix):
 
 
 def calculate(ckpt_file, hparams_file, dict_file, record_file):
-    print('开始加载并且构造字典文件, 请等待...')
-    # 加载向量文件
+    print('Starting to load and construct dictionary file, please wait...')
     print('vector_reduce = np.load dict_file', dict_file)
     vector_reduce = np.load('{}.npz'.format(dict_file))
     all_dict = {}
     for i, _ in enumerate(vector_reduce['high']):
         all_dict[generate_numpy_key(_)] = i
-    print('开始加载模型文件, 请等待...')
-    # 加载要使用的模型
+    print('Starting to load model file, please wait...')
     model = Transformer_Model.load_from_checkpoint(ckpt_file, hparams_file=hparams_file)
     model.eval()
     pl.seed_everything(0)
 
-    # 加载数据集
     yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
 
     ds = ds_dict[yaml_config['args'].dataset]()
     ds.prepare_data()
     ds.setup()
 
-
-    print('开始计算...')
+    print('Start calculation...')
     all_cal = []
 
     file_path_src = "/home/project/SITH/data/test_2016_flickr.en"
