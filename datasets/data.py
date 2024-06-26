@@ -183,7 +183,6 @@ class Multi30k(pl.LightningDataModule):
         return DataLoader(self.valid, self.batch_size, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
-        print('测试输入------------------------------------------------')
         print(DataLoader(self.test, self.batch_size, collate_fn=self.collate_fn))
         return DataLoader(self.test, self.batch_size, collate_fn=self.collate_fn)
 
