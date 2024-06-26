@@ -218,7 +218,6 @@ if __name__=="__main__":
     ds.setup()
     print(ds.getsrc('A man in an orange hat starring at something.'))
     for src, tgt in ds.test_dataloader():
-        print('输出src-------------------------------------------------------------')
         print(src)
         tgt_x = tgt[:, :-1]
         tgt_y = tgt[:, 1:]
