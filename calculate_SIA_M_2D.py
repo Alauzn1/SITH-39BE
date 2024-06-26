@@ -18,27 +18,25 @@ import math
 import calculate_to_csv
 
 def sort_clockwise(points):
-    # 按顺时针排序凸包边界点
+    # Sort convex hull boundary points clockwise
     center = tuple(map(lambda x: sum(x) / len(points), zip(*points)))
     points = sorted(points, key=lambda p: (math.atan2(p[1] - center[1], p[0] - center[0])), reverse=True)
     return points
 
 
 def distance(p1, p2):
-    """计算两个点之间的距离"""
+    """Calculate the distance between two points"""
     return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
 
 def convex_hull_perimeter_diameter(points):
-    """计算凸包的周长和直径"""
+    """Calculate the circumference and diameter of the convex hull"""
     n = len(points)
 
-    # 计算周长
     perimeter = 0.0
     for i in range(n):
         perimeter += distance(points[i], points[(i + 1) % n])
 
-    # 计算直径
     diameter = 0.0
     for i in range(n):
         for j in range(i + 1, n):
@@ -47,10 +45,8 @@ def convex_hull_perimeter_diameter(points):
     return perimeter, diameter
 
 def calculate_each(embedding, hidden, prefix):
-    # a 为词向量所对应的点集
-    # b 为隐含节点所对应的点集
 
-    # 去除重复行
+    # Remove duplicate rows
     embedding_np = np.unique(np.array(embedding), axis=0)
     hidden_np = np.unique(np.array(hidden), axis=0)
 
@@ -87,28 +83,24 @@ def calculate_each(embedding, hidden, prefix):
 
 
 def calculate(ckpt_file, hparams_file, dict_file, record_file):
-    print('开始加载并且构造字典文件, 请等待...')
-    # 加载向量文件
+    print('Starting to load and construct dictionary file, please wait...')
     print('vector_reduce = np.load dict_file', dict_file)
     vector_reduce = np.load('{}.npz'.format(dict_file))
     all_dict = {}
     for i, _ in enumerate(vector_reduce['high']):
         all_dict[generate_numpy_key(_)] = i
-    print('开始加载模型文件, 请等待...')
-    # 加载要使用的模型
+    print('Starting to load model file, please wait...')
     model = Transformer_Model.load_from_checkpoint(ckpt_file, hparams_file=hparams_file)
     model.eval()
     pl.seed_everything(0)
 
-    # 加载数据集
     yaml_config = yaml.load(open(hparams_file, 'r'), Loader=yaml.FullLoader)
 
     ds = ds_dict[yaml_config['args'].dataset]()
     ds.prepare_data()
     ds.setup()
 
-
-    print('开始计算...')
+    print('Start calculation...')
     all_cal = []
 
     file_path_src = "/home/project/SITH/data/test_2016_flickr.en"
